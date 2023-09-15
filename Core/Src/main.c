@@ -65,7 +65,6 @@ void print_time();
 int main(void)
 {
     /* USER CODE BEGIN 1 */
-    set_mode();
     /* USER CODE END 1 */
 
     /* MCU
@@ -89,15 +88,14 @@ int main(void)
     MX_USART2_UART_Init();
     MX_RTC_Init();
     /* USER CODE BEGIN 2 */
-
+    set_mode();
     /* USER CODE END 2 */
 
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
     RTC_TimeTypeDef time;
     RTC_DateTypeDef date;
-    while (1) {
-        set_mode();
+    while (ON) {
         int count = is_pressed(B1_Pin, B1_GPIO_Port);
         if (count == 2) {
             set_time();

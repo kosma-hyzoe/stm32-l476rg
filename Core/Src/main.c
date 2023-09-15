@@ -8,6 +8,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "helpers.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -23,6 +25,7 @@
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
 #define LINE_MAX_LENGTH 80
+#define BACSPACE_CHAR 127
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -68,7 +71,11 @@ int input(char *buffer, char *prompt)
     int line_length = 0;
     while (value != '\r' && value != '\n') {
         HAL_UART_Receive(&huart2, &value, 1, HAL_MAX_DELAY);
-        if (line_length <= LINE_MAX_LENGTH) {
+        if (value == BACSPACE_CHAR) {
+            printf("\b \b");
+            fflush(stdout);
+            line_length--;
+        } else if (line_length <= LINE_MAX_LENGTH) {
             printf("%c", value);
             fflush(stdout);
             buffer[line_length++] = value;
@@ -81,26 +88,9 @@ int input(char *buffer, char *prompt)
     printf("\n");
 
     buffer[line_length - 1] = '\0';
-    return -1;
+    return 0;
 }
 
-int is_pressed(uint16_t pin, GPIO_TypeDef *port)
-{
-    int count = 0;
-    if (HAL_GPIO_ReadPin(port, pin) == GPIO_PIN_RESET) {
-        count++;
-        while (HAL_GPIO_ReadPin(port, pin) == GPIO_PIN_RESET)
-            ;
-
-        HAL_Delay(100);
-        if (HAL_GPIO_ReadPin(port, pin) == GPIO_PIN_RESET) {
-            count++;
-            while (HAL_GPIO_ReadPin(port, pin) == GPIO_PIN_RESET)
-                ;
-        }
-    }
-    return count;
-}
 void set_time()
 {
     RTC_TimeTypeDef time = {0};

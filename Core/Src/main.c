@@ -37,7 +37,7 @@ RTC_HandleTypeDef hrtc;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-int debug_mode;
+int _debug_mode;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -298,7 +298,7 @@ int input(char *buffer, char *prompt)
             fflush(stdout);
             line_length--;
         } else if (line_length <= LINE_MAX_LENGTH) {
-            printf(!debug_mode ? "%c" : "%d", value);
+            printf(!_debug_mode ? "%c" : "%d", value);
             fflush(stdout);
             buffer[line_length++] = value;
         } else {
@@ -316,8 +316,7 @@ int input(char *buffer, char *prompt)
 int set_mode()
 {
      if (is_pressed(BDEBUG_Pin, BDEBUG_GPIO_Port)) {
-        debug_mode = ON;
-        printf("**DEBUG MODE**\n");
+        _debug_mode = ON;
         HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
      } else {
         HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);

@@ -25,7 +25,10 @@
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
 #define LINE_MAX_LENGTH 80
-#define BACSPACE_CHAR 127
+#define BACKSPACE 127
+
+#define ON 1
+#define OFF 1
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -34,7 +37,7 @@ RTC_HandleTypeDef hrtc;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-
+int debug_mode;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -43,76 +46,16 @@ static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_RTC_Init(void);
 /* USER CODE BEGIN PFP */
+int __io_putchar(int);
+int input(char *, char *);
+int set_mode();
 
+void set_time();
+void print_time();
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-int __io_putchar(int ch)
-{
-    if (ch == '\n') {
-        uint8_t cr = '\r';
-        HAL_UART_Transmit(&huart2, &cr, 1, HAL_MAX_DELAY);
-    }
-
-    HAL_UART_Transmit(&huart2, (uint8_t *)&ch, 1, HAL_MAX_DELAY);
-    return 1;
-}
-
-int input(char *buffer, char *prompt)
-{
-    if (prompt == NULL)
-        printf("> ");
-    else
-        printf(prompt);
-    fflush(stdout);
-
-    uint8_t value = -1;
-    int line_length = 0;
-    while (value != '\r' && value != '\n') {
-        HAL_UART_Receive(&huart2, &value, 1, HAL_MAX_DELAY);
-        if (value == BACSPACE_CHAR) {
-            printf("\b \b");
-            fflush(stdout);
-            line_length--;
-        } else if (line_length <= LINE_MAX_LENGTH) {
-            printf("%c", value);
-            fflush(stdout);
-            buffer[line_length++] = value;
-        } else {
-            buffer[line_length] = '\0';
-            printf("\nERROR\n");
-            return 1;
-        }
-    }
-    printf("\n");
-
-    buffer[line_length - 1] = '\0';
-    return 0;
-}
-
-void set_time()
-{
-    RTC_TimeTypeDef time = {0};
-    char hours[3], minutes[3], seconds[3];
-
-    input(hours, "Hours: ");
-    time.Hours = strtoul(hours, NULL, 10);
-    input(minutes, "Minutes: ");
-    time.Minutes = strtoul(minutes, NULL, 10);
-    input(seconds, "Seconds: ");
-    time.Seconds = strtoul(seconds, NULL, 10);
-    HAL_RTC_SetTime(&hrtc, &time, RTC_FORMAT_BIN);
-    printf("Time set.\n");
-}
-
-void print_time(RTC_TimeTypeDef time, RTC_DateTypeDef date)
-{
-    HAL_RTC_GetTime(&hrtc, &time, RTC_FORMAT_BIN);
-    HAL_RTC_GetDate(&hrtc, &date, RTC_FORMAT_BIN);
-
-    printf("%02d:%02d:%02d\n", time.Hours, time.Minutes, time.Seconds);
-}
 /* USER CODE END 0 */
 
 /**
@@ -122,6 +65,7 @@ void print_time(RTC_TimeTypeDef time, RTC_DateTypeDef date)
 int main(void)
 {
     /* USER CODE BEGIN 1 */
+    set_mode();
     /* USER CODE END 1 */
 
     /* MCU
@@ -153,6 +97,7 @@ int main(void)
     RTC_TimeTypeDef time;
     RTC_DateTypeDef date;
     while (1) {
+        set_mode();
         int count = is_pressed(B1_Pin, B1_GPIO_Port);
         if (count == 2) {
             set_time();
@@ -314,11 +259,93 @@ static void MX_GPIO_Init(void)
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
 
+    /*Configure GPIO pin : BDEBUG_Pin */
+    GPIO_InitStruct.Pin = BDEBUG_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    HAL_GPIO_Init(BDEBUG_GPIO_Port, &GPIO_InitStruct);
+
     /* USER CODE BEGIN MX_GPIO_Init_2 */
     /* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
+int __io_putchar(int ch)
+{
+    if (ch == '\n') {
+        uint8_t cr = '\r';
+        HAL_UART_Transmit(&huart2, &cr, 1, HAL_MAX_DELAY);
+    }
+
+    HAL_UART_Transmit(&huart2, (uint8_t *)&ch, 1, HAL_MAX_DELAY);
+    return 1;
+}
+
+int input(char *buffer, char *prompt)
+{
+    if (prompt == NULL)
+        printf("> ");
+    else
+        printf(prompt);
+    fflush(stdout);
+
+    uint8_t value = -1;
+    int line_length = 0;
+    while (value != '\r' && value != '\n') {
+        HAL_UART_Receive(&huart2, &value, 1, HAL_MAX_DELAY);
+        if (value == BACKSPACE) {
+            printf("\b \b");
+            fflush(stdout);
+            line_length--;
+        } else if (line_length <= LINE_MAX_LENGTH) {
+            printf(!debug_mode ? "%c" : "%d", value);
+            fflush(stdout);
+            buffer[line_length++] = value;
+        } else {
+            buffer[line_length] = '\0';
+            printf("\nERROR\n");
+            return 1;
+        }
+    }
+    printf("\n");
+
+    buffer[line_length - 1] = '\0';
+    return 0;
+}
+
+int set_mode()
+{
+     if (is_pressed(BDEBUG_Pin, BDEBUG_GPIO_Port)) {
+        debug_mode = ON;
+        printf("**DEBUG MODE**\n");
+        HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
+     } else {
+        HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
+     }
+}
+
+void set_time()
+{
+    RTC_TimeTypeDef time = {0};
+    char hours[3], minutes[3], seconds[3];
+
+    input(hours, "Hours: ");
+    time.Hours = strtoul(hours, NULL, 10);
+    input(minutes, "Minutes: ");
+    time.Minutes = strtoul(minutes, NULL, 10);
+    input(seconds, "Seconds: ");
+    time.Seconds = strtoul(seconds, NULL, 10);
+    HAL_RTC_SetTime(&hrtc, &time, RTC_FORMAT_BIN);
+    printf("Time set.\n");
+}
+
+void print_time(RTC_TimeTypeDef time, RTC_DateTypeDef date)
+{
+    HAL_RTC_GetTime(&hrtc, &time, RTC_FORMAT_BIN);
+    HAL_RTC_GetDate(&hrtc, &date, RTC_FORMAT_BIN);
+
+    printf("%02d:%02d:%02d\n", time.Hours, time.Minutes, time.Seconds);
+}
 /* USER CODE END 4 */
 
 /**

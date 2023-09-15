@@ -5,5 +5,4 @@
 #define LINE_MAX_LENGTH 80
 
 int is_pressed(uint16_t pin, GPIO_TypeDef *port);
-
 #endif

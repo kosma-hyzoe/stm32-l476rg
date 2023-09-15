@@ -12,3 +12,5 @@ CMakeLists.txt
 CMakePresets.json
 cmake/
 vcpkg-configuration.json
+Debug/
+l476rg Debug.launch

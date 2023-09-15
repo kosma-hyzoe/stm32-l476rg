@@ -56,13 +56,15 @@ int __io_putchar(int ch)
     return 1;
 }
 
-int input(char *buffer)
+int input(char *buffer, char *prompt)
 {
-    uint8_t value = -1;
-
-    printf("> ");
+    if (prompt == NULL)
+        printf("> ");
+    else
+        print(prompt);
     fflush(stdout);
 
+    uint8_t value = -1;
     int line_length = 0;
     while (value != '\r' && value != '\n') {
         HAL_UART_Receive(&huart2, &value, 1, HAL_MAX_DELAY);
@@ -119,7 +121,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
     char line_buffer[LINE_MAX_LENGTH + 1];
     while (1) {
-        input(line_buffer);
+        input(line_buffer, NULL);
         if (strcmp(line_buffer, LD2_TOGGLE_CMD) == 0)
             HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
     /* USER CODE END WHILE */

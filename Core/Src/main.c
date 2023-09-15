@@ -64,7 +64,6 @@ static void MX_USART2_UART_Init(void);
  */
 int main(void) {
     /* USER CODE BEGIN 1 */
-
     /* USER CODE END 1 */
 
     /* MCU Configuration--------------------------------------------------------*/
@@ -73,14 +72,12 @@ int main(void) {
     HAL_Init();
 
     /* USER CODE BEGIN Init */
-
     /* USER CODE END Init */
 
     /* Configure the system clock */
     SystemClock_Config();
 
     /* USER CODE BEGIN SysInit */
-
     /* USER CODE END SysInit */
 
     /* Initialize all configured peripherals */
@@ -94,7 +91,8 @@ int main(void) {
     /* USER CODE BEGIN WHILE */
     while (1) {
         /* USER CODE END WHILE */
-
+        HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+        HAL_Delay(200);
         /* USER CODE BEGIN 3 */
     }
     /* USER CODE END 3 */
@@ -154,11 +152,9 @@ void SystemClock_Config(void) {
 static void MX_USART2_UART_Init(void) {
 
     /* USER CODE BEGIN USART2_Init 0 */
-
     /* USER CODE END USART2_Init 0 */
 
     /* USER CODE BEGIN USART2_Init 1 */
-
     /* USER CODE END USART2_Init 1 */
     huart2.Instance = USART2;
     huart2.Init.BaudRate = 115200;
@@ -175,7 +171,6 @@ static void MX_USART2_UART_Init(void) {
         Error_Handler();
     }
     /* USER CODE BEGIN USART2_Init 2 */
-
     /* USER CODE END USART2_Init 2 */
 
 }
@@ -217,7 +212,6 @@ static void MX_GPIO_Init(void) {
 }
 
 /* USER CODE BEGIN 4 */
-
 /* USER CODE END 4 */
 
 /**

@@ -2,3 +2,13 @@
 .mxproject
 .project
 .settings/
+build
+.vscode
+.vs
+
+## CMake nonsense
+
+CMakeLists.txt
+CMakePresets.json
+cmake/
+vcpkg-configuration.json

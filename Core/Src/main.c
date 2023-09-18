@@ -32,10 +32,6 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-IWDG_HandleTypeDef hiwdg;
-
-RTC_HandleTypeDef hrtc;
-
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
@@ -46,12 +42,10 @@ int _debug_mode;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
-static void MX_RTC_Init(void);
-static void MX_IWDG_Init(void);
 /* USER CODE BEGIN PFP */
 int __io_putchar(int);
 int input(char *, char *);
-int set_mode();
+void set_mode();
 
 void set_time();
 void print_time();
@@ -87,37 +81,16 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART2_UART_Init();
-  MX_RTC_Init();
-  MX_IWDG_Init();
   /* USER CODE BEGIN 2 */
-    set_mode();
+  set_mode();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-    RTC_TimeTypeDef time;
-    RTC_DateTypeDef date;
-    uint32_t working_time = HAL_GetTick();
     while (ON) {
-        uint32_t now = HAL_GetTick();
-
-        int count = is_pressed(B1_Pin, B1_GPIO_Port);
-        if (count == 2) {
-            set_time();
-        } else if (count == 1) {
-            print_time(time, date);
-        }
-
-        if (now - working_time >= 500) {
-            HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
-            working_time = now;
-
-            HAL_IWDG_Refresh(&hiwdg);
-        }
     /* USER CODE END WHILE */
-
     /* USER CODE BEGIN 3 */
-}
+    }
   /* USER CODE END 3 */
 }
 
@@ -137,18 +110,10 @@ void SystemClock_Config(void)
     Error_Handler();
   }
 
-  /** Configure LSE Drive Capability
-  */
-  HAL_PWR_EnableBkUpAccess();
-  __HAL_RCC_LSEDRIVE_CONFIG(RCC_LSEDRIVE_LOW);
-
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI|RCC_OSCILLATORTYPE_LSE
-                              |RCC_OSCILLATORTYPE_MSI;
-  RCC_OscInitStruct.LSEState = RCC_LSE_ON;
-  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_MSI;
   RCC_OscInitStruct.MSIState = RCC_MSI_ON;
   RCC_OscInitStruct.MSICalibrationValue = 0;
   RCC_OscInitStruct.MSIClockRange = RCC_MSIRANGE_6;
@@ -177,75 +142,6 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-
-  /** Enable MSI Auto calibration
-  */
-  HAL_RCCEx_EnableMSIPLLMode();
-}
-
-/**
-  * @brief IWDG Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_IWDG_Init(void)
-{
-
-  /* USER CODE BEGIN IWDG_Init 0 */
-
-  /* USER CODE END IWDG_Init 0 */
-
-  /* USER CODE BEGIN IWDG_Init 1 */
-
-  /* USER CODE END IWDG_Init 1 */
-  hiwdg.Instance = IWDG;
-  hiwdg.Init.Prescaler = IWDG_PRESCALER_32;
-  hiwdg.Init.Window = 4095;
-  hiwdg.Init.Reload = 4095;
-  if (HAL_IWDG_Init(&hiwdg) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN IWDG_Init 2 */
-
-  /* USER CODE END IWDG_Init 2 */
-
-}
-
-/**
-  * @brief RTC Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_RTC_Init(void)
-{
-
-  /* USER CODE BEGIN RTC_Init 0 */
-
-  /* USER CODE END RTC_Init 0 */
-
-  /* USER CODE BEGIN RTC_Init 1 */
-
-  /* USER CODE END RTC_Init 1 */
-
-  /** Initialize RTC Only
-  */
-  hrtc.Instance = RTC;
-  hrtc.Init.HourFormat = RTC_HOURFORMAT_24;
-  hrtc.Init.AsynchPrediv = 127;
-  hrtc.Init.SynchPrediv = 255;
-  hrtc.Init.OutPut = RTC_OUTPUT_DISABLE;
-  hrtc.Init.OutPutRemap = RTC_OUTPUT_REMAP_NONE;
-  hrtc.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
-  hrtc.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
-  if (HAL_RTC_Init(&hrtc) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN RTC_Init 2 */
-
-  /* USER CODE END RTC_Init 2 */
-
 }
 
 /**
@@ -314,12 +210,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : BDEBUG_Pin PA14_Pin */
-  GPIO_InitStruct.Pin = BDEBUG_Pin|PA14_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
 }
@@ -369,39 +259,15 @@ int input(char *buffer, char *prompt)
     return 0;
 }
 
-int set_mode()
+// TODO: assign constant GPIO pin or remvoe
+void set_mode()
 {
-     if (is_pressed(BDEBUG_Pin, BDEBUG_GPIO_Port)) {
+    if (is_pressed(B1_Pin, B1_GPIO_Port))
         _debug_mode = ON;
-        HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
-        HAL_Delay(100);
-        HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
-        HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
-     }
+    else
+        _debug_mode = OFF;
 }
 
-void set_time()
-{
-    RTC_TimeTypeDef time = {0};
-    char hours[3], minutes[3], seconds[3];
-
-    input(hours, "Hours: ");
-    time.Hours = strtoul(hours, NULL, 10);
-    input(minutes, "Minutes: ");
-    time.Minutes = strtoul(minutes, NULL, 10);
-    input(seconds, "Seconds: ");
-    time.Seconds = strtoul(seconds, NULL, 10);
-    HAL_RTC_SetTime(&hrtc, &time, RTC_FORMAT_BIN);
-    printf("Time set.\n");
-}
-
-void print_time(RTC_TimeTypeDef time, RTC_DateTypeDef date)
-{
-    HAL_RTC_GetTime(&hrtc, &time, RTC_FORMAT_BIN);
-    HAL_RTC_GetDate(&hrtc, &date, RTC_FORMAT_BIN);
-
-    printf("%02d:%02d:%02d\n", time.Hours, time.Minutes, time.Seconds);
-}
 /* USER CODE END 4 */
 
 /**

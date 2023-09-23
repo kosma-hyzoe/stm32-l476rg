@@ -109,7 +109,7 @@ int main(void)
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
     char buff[255];
-    while (1) {
+    while (ON) {
         if (is_pressed(B1_Pin, B1_GPIO_Port))
             input(&buff, NULL);
 

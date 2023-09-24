@@ -72,7 +72,35 @@ void set_mode();
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+    if (htim == &htim3) {
+        HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
 
+        HAL_GPIO_WritePin(ELD1_GPIO_Port, ELD1_Pin, GPIO_PIN_SET);
+        HAL_GPIO_WritePin(ELD2_GPIO_Port, ELD2_Pin, GPIO_PIN_SET);
+        HAL_GPIO_WritePin(ELD3_GPIO_Port, ELD3_Pin, GPIO_PIN_SET);
+    }
+}
+
+void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
+{
+    if (htim == &htim3) {
+        switch (HAL_TIM_GetActiveChannel(&htim3)) {
+        case HAL_TIM_ACTIVE_CHANNEL_1:
+            HAL_GPIO_WritePin(ELD1_GPIO_Port, ELD1_Pin, GPIO_PIN_RESET);
+            break;
+        case HAL_TIM_ACTIVE_CHANNEL_2:
+            HAL_GPIO_WritePin(ELD2_GPIO_Port, ELD2_Pin, GPIO_PIN_RESET);
+            break;
+        case HAL_TIM_ACTIVE_CHANNEL_3:
+            HAL_GPIO_WritePin(ELD3_GPIO_Port, ELD3_Pin, GPIO_PIN_RESET);
+            break;
+        default:
+            break;
+        }
+    }
+}
 int _debug_mode;
 /* USER CODE END 0 */
 
@@ -91,7 +119,6 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -107,16 +134,16 @@ int main(void)
   MX_TIM6_Init();
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
-
+    HAL_TIM_Base_Start_IT(&htim3);
+    HAL_TIM_OC_Start_IT(&htim3, TIM_CHANNEL_1);
+    HAL_TIM_OC_Start_IT(&htim3, TIM_CHANNEL_2);
+    HAL_TIM_OC_Start_IT(&htim3, TIM_CHANNEL_3);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-    char buff[255];
     while (ON) {
-        if (is_pressed(B1_Pin, B1_GPIO_Port))
-            input(&buff, NULL);
-
+        printf("bar\n");
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -182,7 +209,6 @@ static void MX_TIM3_Init(void)
 {
 
   /* USER CODE BEGIN TIM3_Init 0 */
-
   /* USER CODE END TIM3_Init 0 */
 
   TIM_ClockConfigTypeDef sClockSourceConfig = {0};
@@ -190,7 +216,6 @@ static void MX_TIM3_Init(void)
   TIM_OC_InitTypeDef sConfigOC = {0};
 
   /* USER CODE BEGIN TIM3_Init 1 */
-
   /* USER CODE END TIM3_Init 1 */
   htim3.Instance = TIM3;
   htim3.Init.Prescaler = 0;
@@ -236,7 +261,6 @@ static void MX_TIM3_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN TIM3_Init 2 */
-
   /* USER CODE END TIM3_Init 2 */
 
 }
@@ -335,7 +359,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOA, LD2_Pin|ELD1_Pin|ELD2_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(EL3_GPIO_Port, EL3_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(ELD3_GPIO_Port, ELD3_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : B1_Pin */
   GPIO_InitStruct.Pin = B1_Pin;
@@ -350,12 +374,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : EL3_Pin */
-  GPIO_InitStruct.Pin = EL3_Pin;
+  /*Configure GPIO pin : ELD3_Pin */
+  GPIO_InitStruct.Pin = ELD3_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(EL3_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(ELD3_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);

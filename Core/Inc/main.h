@@ -70,8 +70,8 @@ void Error_Handler(void);
 #define ELD1_GPIO_Port GPIOA
 #define ELD2_Pin GPIO_PIN_7
 #define ELD2_GPIO_Port GPIOA
-#define EL3_Pin GPIO_PIN_0
-#define EL3_GPIO_Port GPIOB
+#define ELD3_Pin GPIO_PIN_0
+#define ELD3_GPIO_Port GPIOB
 #define TMS_Pin GPIO_PIN_13
 #define TMS_GPIO_Port GPIOA
 #define TCK_Pin GPIO_PIN_14

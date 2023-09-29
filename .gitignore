@@ -5,8 +5,7 @@
 build
 .vscode
 .vs
-Debug/
-l476rg Debug.launch
+stm32l4.md
 
 
 ## CMake nonsense

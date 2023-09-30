@@ -1,3 +1,4 @@
 #include "main.h"
 
-int is_pressed(uint16_t pin, GPIO_TypeDef *port);
+int is_pressed(GPIO_TypeDef *port, uint16_t pin);
+int blink(int count);

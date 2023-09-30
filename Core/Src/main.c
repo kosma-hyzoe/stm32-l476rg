@@ -44,7 +44,7 @@
 #define BACKSPACE 127
 
 #define ON 1
-#define OFF 1
+#define OFF 0
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -61,6 +61,7 @@ static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
 int __io_putchar(int);
 int input(char *, char *);
+int blink(int);
 void set_mode();
 
 /* USER CODE END PFP */
@@ -99,15 +100,12 @@ int main(void)
   MX_GPIO_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-
+  set_mode();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-    char buff[255];
     while (ON) {
-        if (is_pressed(B1_Pin, B1_GPIO_Port))
-            input(&buff, NULL);
 
     /* USER CODE END WHILE */
 
@@ -225,7 +223,7 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin : B1_Pin */
   GPIO_InitStruct.Pin = B1_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
 
@@ -248,10 +246,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(DBGB_GPIO_Port, &GPIO_InitStruct);
-
-  /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
@@ -305,10 +299,14 @@ int input(char *buffer, char *prompt)
 // TODO: assign constant GPIO pin or remove
 void set_mode()
 {
-    if (is_pressed(B1_Pin, B1_GPIO_Port))
+    if (is_pressed(B1_GPIO_Port, B1_Pin))
         _debug_mode = ON;
+
     else
         _debug_mode = OFF;
+
+    if (_debug_mode)
+        blink(3);
 }
 /* USER CODE END 4 */
 

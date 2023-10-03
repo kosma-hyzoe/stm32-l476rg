@@ -1,7 +1,5 @@
 # Forbot: kurs STM32L4
 
-# Basics
-
 ## Devices
 
 * I2C - inter-integrated circuit, SDA for data, SCL for clock
@@ -79,3 +77,14 @@ float calc_pwm(float val)
 
 * TIM3 > ETR2, `HAL_TIM_Base_Start`, `__HAL_TIM_GET_COUNTER(&htim3)`
 * TIM3 > Clock  > Clock filter
+* TIM3 > Disable all > Combined Channels > Encoder Mode
+  * HAL_TIM_Encoder_Start
+  * `__HAL_TIM_GET_COUNTER`
+
+### Measuring pulse width (TIM3)
+
+* Slave mode > Reset
+* Trigger > TI1F_ED (edge detection)
+* Prescaler > 8000 - 1
+* Polarity > Rising edge
+* Input filter > 16 - 1
